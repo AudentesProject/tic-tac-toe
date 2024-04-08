@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe with Simple AI</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        .board {
+            display: grid;
+            grid-template: repeat(3, 100px) / repeat(3, 100px);
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+            font-size: 2em;
+            cursor: pointer;
+        }
+
+        #sideSelection {
+            margin-bottom: 20px;
+        }
+        /* Add styles for dark theme */
+.dark {
+    background-color: #333;
+    color: #fff;
+}
+
+/* Add styles for system theme */
+@media (prefers-color-scheme: dark) {
+    body[data-theme='system'] {
+        background-color: #333;
+        color: #fff;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <div id="sideSelection">
+        Choose your side: 
+        <button id="chooseX">X</button>
+        <button id="chooseO">O</button>
+    </div>
+    <div id="gameStatus"></div>
+    <div id="ticTacToeBoard" class="board"></div>
+
+    
+
+    <script>
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            const squares = [];
+            const ticTacToeBoard = document.getElementById('ticTacToeBoard');
+            const gameStatus = document.getElementById('gameStatus');
+            const sideSelection = document.getElementById('sideSelection');
+            let player = 'X';
+            let ai = 'O';
+            let currentPlayer = 'Player';
+
+            sideSelection.addEventListener('click', (e) => {
+                if (e.target.id === 'chooseX' || e.target.id === 'chooseO') {
+                    player = e.target.id === 'chooseX' ? 'X' : 'O';
+                    ai = player === 'X' ? 'O' : 'X';
+                    currentPlayer = player === 'X' ? 'Player' : 'AI'; // Set the correct starting player
+                    sideSelection.style.display = 'none';
+                    initializeBoard();
+                    updateGameStatus();
+                    if (currentPlayer === 'AI') {
+                        setTimeout(aiMove, 300); // AI makes the first move if it's 'X'
+                    }
+                }
+            });
+
+            function initializeBoard() {
+                ticTacToeBoard.innerHTML = ''; // Clear the board
+                for (let i = 0; i < 9; i++) {
+                    const square = document.createElement('div');
+                    square.classList.add('cell');
+                    square.addEventListener('click', () => playerMove(square, i));
+                    ticTacToeBoard.appendChild(square);
+                    squares.push(square);
+                }
+            }
+
+            function playerMove(square, index) {
+                if (square.textContent === '' && currentPlayer === 'Player') {
+                    square.textContent = player;
+                    endTurn();
+                }
+            }
+
+            function aiMove() {
+                let availableSquares = squares.filter(square => square.textContent === '');
+                if (availableSquares.length > 0) {
+                    let move = Math.floor(Math.random() * availableSquares.length);
+                    availableSquares[move].textContent = ai;
+                    endTurn();
+                }
+            }
+
+            function endTurn() {
+                if (checkWin(player)) {
+                    gameStatus.textContent = `Player Wins!`;
+                    ticTacToeBoard.style.pointerEvents = 'none';
+                } else if (checkWin(ai)) {
+                    gameStatus.textContent = `AI Wins!`;
+                    ticTacToeBoard.style.pointerEvents = 'none';
+                } else if (checkTie()) {
+                    gameStatus.textContent = `It's a draw!`;
+                } else {
+                    currentPlayer = currentPlayer === 'Player' ? 'AI' : 'Player';
+                    updateGameStatus();
+                    if (currentPlayer === 'AI') {
+                        setTimeout(aiMove, 300); // AI makes a move after a short delay
+                    }
+                }
+            }
+
+            function updateGameStatus() {
+                gameStatus.textContent = `${currentPlayer === 'Player' ? 'Your' : 'AI'} turn`;
+            }
+
+            function checkWin(symbol) {
+                const winConditions = [
+                    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+                    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+                    [0, 4, 8], [2, 4, 6] // Diagonals
+                ];
+
+                return winConditions.some(condition => {
+                    return condition.every(index => squares[index].textContent === symbol);
+                });
+            }
+
+            function checkTie() {
+                return squares.every(square => square.textContent !== '');
+            }
+        });
+    </script>
+</body>
+</html>
